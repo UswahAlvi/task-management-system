@@ -27,6 +27,9 @@ export class UsersService {
   async findOne(username: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { username } });
   }
+  async findAll(): Promise<User[]> {
+    return this.userRepository.find();
+  }
   async deleteOne({
     username,
     password,
@@ -37,8 +40,7 @@ export class UsersService {
     const user: User | null = await this.userRepository.findOne({
       where: { username },
     });
-    if (!user)
-      return 'no such user exists';
+    if (!user) return 'no such user exists';
     const isMatch: boolean = await bcrypt.compare(password, user?.password);
     if (!isMatch) {
       return 'invalid user';

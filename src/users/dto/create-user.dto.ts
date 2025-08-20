@@ -12,7 +12,7 @@ const passwordRegEx =
 export class CreateUserDto {
   @IsString()
   @MinLength(4, { message: 'Username must be at least 4 characters' })
-  @MaxLength(20, { message: 'Username must be at least 8 characters' })
+  @MaxLength(20, { message: 'Username must be at max 8 characters' })
   @IsNotEmpty()
   username: string;
 
@@ -25,7 +25,6 @@ export class CreateUserDto {
   @IsString()
   @MinLength(2, { message: 'Lastname must be at least 2 characters' })
   @MaxLength(20, { message: 'Lastname must be at most 20 characters' })
-  @IsNotEmpty()
   lastname: string;
 
   @IsNotEmpty()

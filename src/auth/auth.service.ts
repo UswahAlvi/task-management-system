@@ -18,14 +18,17 @@ export class AuthService {
     password: string;
   }) {
     const user: User | null = await this.userService.findOne(username);
-    const isMatch: boolean = await bcrypt.compare(
-      password,
-      <string>user?.password,
-    );
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+    const isMatch: boolean = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       throw new UnauthorizedException();
     }
-    const payload = { username: user?.username };
+    const payload = {
+      sub: user.id,
+      username: user.username,
+    };
     return {
       access_token: await this.jwtService.signAsync(payload, {
         expiresIn: '7d',
