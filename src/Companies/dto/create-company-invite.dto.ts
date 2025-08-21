@@ -1,13 +1,12 @@
 import { IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
-import { Role } from '../../users/role.enum';
+import { CompanyRoleEnum } from '../../Guards/companyRole.enum';
 
 export class CreateCompanyInviteDto {
-
   @IsNotEmpty()
   @IsNumber()
   sendTo: number;
 
   @IsNotEmpty()
-  @IsEnum(Role)
-  role: Role;
+  @IsEnum(CompanyRoleEnum)
+  role: CompanyRoleEnum;
 }

@@ -5,7 +5,7 @@ import { Company } from './entities/company.entity';
 import { CreateCompanyInviteDto } from './dto/create-company-invite.dto';
 import { CompanyInvite } from './entities/company-invite.entity';
 import { UserCompany } from './entities/user-company.entity';
-import { Role } from '../users/role.enum';
+import { CompanyRoleEnum } from '../Guards/companyRole.enum';
 
 @Injectable()
 export class CompaniesService {
@@ -13,9 +13,9 @@ export class CompaniesService {
     @InjectRepository(Company)
     private readonly companiesRepository: Repository<Company>,
     @InjectRepository(CompanyInvite)
-    private readonly CompaniesInviteRepository: Repository<CompanyInvite>,
+    private readonly companiesInviteRepository: Repository<CompanyInvite>,
     @InjectRepository(UserCompany)
-    private readonly UserCompanyRepository: Repository<UserCompany>,
+    private readonly userCompanyRepository: Repository<UserCompany>,
   ) {}
 
   async create(id: number, companyName: string): Promise<string> {
@@ -26,43 +26,73 @@ export class CompaniesService {
     const userCompany = new UserCompany();
     userCompany.companyId = company.id;
     userCompany.userId = id;
-    userCompany.role = Role.Owner;
-    await this.UserCompanyRepository.save(userCompany);
+    userCompany.role = CompanyRoleEnum.Owner;
+    await this.userCompanyRepository.save(userCompany);
     return `Company ${company.name} created successfully`;
   }
 
-  sendInvite(
+  async sendInvite(
     userId: number,
     companyId: number,
     createCompanyInviteDto: CreateCompanyInviteDto,
   ) {
+    if (companyId === undefined) {
+      return 'please provide a valid companyId';
+    }
+    if (userId === createCompanyInviteDto.sendTo) {
+      return 'You are sending invite to your own-self, please invite others.';
+    }
+    const alreadySent = await this.companiesInviteRepository.findOne({
+      where: { sendTo: createCompanyInviteDto.sendTo, companyId: companyId },
+    });
+    if (alreadySent) {
+      return 'An invite already sent to this user for your company';
+    }
+    if (
+      createCompanyInviteDto.role !== CompanyRoleEnum.Admin &&
+      createCompanyInviteDto.role !== CompanyRoleEnum.Member
+    ) {
+      return 'The role can either be admin or member. Please provide a valid role';
+    }
+    const exists = await this.userCompanyRepository.exists({
+      where: { userId: createCompanyInviteDto.sendTo },
+    });
+    if (exists) {
+      return 'user already exists in company';
+    }
     const companyInvite = new CompanyInvite();
     companyInvite.companyId = companyId;
     companyInvite.sendTo = createCompanyInviteDto.sendTo;
     companyInvite.sendBy = userId;
     companyInvite.role = createCompanyInviteDto.role;
     companyInvite.accepted = false;
-    return this.CompaniesInviteRepository.save(companyInvite);
+    await this.companiesInviteRepository.save(companyInvite);
+    return 'successfully sent invite';
   }
   viewMyCompanies(userId: number) {
-    return this.companiesRepository.find({ where: { owner: userId } });
+    return this.userCompanyRepository.find({ where: { userId } });
   }
-  getRolesByCompanyIdAndUserId(
+  async getRolesByCompanyIdAndUserId(
     userId: number,
     companyId: number,
-  ): Promise<UserCompany[]> {
-    return this.UserCompanyRepository.find({
+  ): Promise<CompanyRoleEnum[]> {
+    const userCompanies = await this.userCompanyRepository.find({
       select: { role: true },
       where: { userId: userId, companyId: companyId },
     });
+    return userCompanies.map((uc) => uc.role);
   }
 
   getInvitesByCompanyIdAndUserId(
     sendBy: number,
     companyId: number,
   ): Promise<CompanyInvite[]> {
-    return this.CompaniesInviteRepository.find({
+    return this.companiesInviteRepository.find({
       where: { sendBy, companyId },
     });
+  }
+
+  getUsersByCompanyId(companyId: number) {
+    return this.userCompanyRepository.find({ where: { companyId } });
   }
 }

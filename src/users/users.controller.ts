@@ -1,8 +1,11 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Public } from '../auth/public.decorator';
+import { Public } from '../Guards/public.decorator';
 import { User } from './entities/user.entity';
+import * as authenticatedRequestInterface from '../Companies/interfaces/authenticated-request.interface';
+import { CompanyInvite } from '../Companies/entities/company-invite.entity';
+
 
 @Controller('user')
 export class UsersController {
@@ -19,5 +22,37 @@ export class UsersController {
   @Get()
   findAllUsers(): Promise<User[]> {
     return this.usersService.findAll();
+  }
+  @Get('invitations-to-me')
+  findInvitationsToMe(
+    @Req()
+    req: authenticatedRequestInterface.AuthenticatedRequest,
+  ): Promise<CompanyInvite[]> {
+    const userId = req.user.sub;
+    return this.usersService.findInvitationsToUser(userId);
+  }
+  @Get('invitations-to-me/:invitationId')
+  findInvitationToMeByInvitationId(
+    @Param('invitationId') invitationId: number,
+    @Req() req: authenticatedRequestInterface.AuthenticatedRequest,
+  ) {
+    const userId = req.user.sub;
+    return this.usersService.findInvitationsToUserByInvitationId(
+      userId,
+      invitationId,
+    );
+  }
+  @Post('invitations-to-me/:invitationId/:accept')
+  acceptInvitation(
+    @Req() req: authenticatedRequestInterface.AuthenticatedRequest,
+    @Param('invitationId') invitationId: number,
+    @Param('accept') acceptInvitation: string,
+  ) {
+    const userId = req.user.sub;
+    return this.usersService.acceptInvitation(
+      userId,
+      invitationId,
+      acceptInvitation,
+    );
   }
 }

@@ -1,10 +1,14 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from './roles.decorator';
-import { Role } from './role.enum';
+import { CompanyRoleEnum } from './companyRole.enum';
 import { AuthenticatedRequest } from '../Companies/interfaces/authenticated-request.interface';
 import { CompaniesService } from '../Companies/companies.service';
-import { UserCompany } from '../Companies/entities/user-company.entity';
 
 @Injectable()
 export class CompanyRolesGuard implements CanActivate {
@@ -14,10 +18,10 @@ export class CompanyRolesGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const roles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const roles = this.reflector.getAllAndOverride<CompanyRoleEnum[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     if (!roles || roles.length === 0) {
       return true;
@@ -25,6 +29,11 @@ export class CompanyRolesGuard implements CanActivate {
 
     const request: AuthenticatedRequest = context.switchToHttp().getRequest();
     const companyId = parseInt(request.params.companyId);
+    if (!companyId) {
+      throw new UnauthorizedException(
+        'Company role guard disapproved of your request as invalid or no companyId provided in parameter',
+      );
+    }
     const userId = request.user.sub;
 
     const rolesInCompany =
@@ -33,13 +42,14 @@ export class CompanyRolesGuard implements CanActivate {
         companyId,
       );
 
-    console.log('Roles required:', roles);
-    console.log('User roles in company:', rolesInCompany);
-
-    return roles.some((role: Role): boolean => {
-      return rolesInCompany.some(
-        (userCompany: UserCompany): boolean => userCompany.role === role,
-      );
+    const flag = roles.some((role: CompanyRoleEnum): boolean => {
+      return rolesInCompany.includes(role);
     });
+    if (!flag) {
+      throw new UnauthorizedException(
+        `You are no eligible for this request. Roles required for this request: ${roles.join(', ')}`,
+      );
+    }
+    return true;
   }
 }

@@ -4,11 +4,18 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
+import { CompanyInvite } from '../Companies/entities/company-invite.entity';
+import { Company } from '../Companies/entities/company.entity';
+import { UserCompany } from '../Companies/entities/user-company.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(CompanyInvite)
+    private readonly companyInviteRepository: Repository<CompanyInvite>,
+    @InjectRepository(UserCompany)
+    private readonly userCompanyRepository: Repository<UserCompany>,
   ) {}
 
   private async hashString(str: string): Promise<string> {
@@ -16,13 +23,14 @@ export class UsersService {
     return await bcrypt.hash(str, saltRounds);
   }
 
-  async createUser(createUserDto: CreateUserDto): Promise<User> {
+  async createUser(createUserDto: CreateUserDto): Promise<string> {
     const user: User = new User();
     user.username = createUserDto.username;
     user.firstname = createUserDto.firstname;
     user.lastname = createUserDto.lastname;
     user.password = await this.hashString(createUserDto.password);
-    return this.userRepository.save(user);
+    await this.userRepository.save(user);
+    return 'successfully created user';
   }
   async findOne(username: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { username } });
@@ -47,5 +55,39 @@ export class UsersService {
     }
     await this.userRepository.delete(user?.id);
     return 'successfully deleted user';
+  }
+  findInvitationsToUser(userId: number): Promise<CompanyInvite[]> {
+    return this.companyInviteRepository.find({ where: { sendTo: userId } });
+  }
+  findInvitationsToUserByInvitationId(
+    userId: number,
+    invitationId: number,
+  ): Promise<CompanyInvite | null> {
+    return this.companyInviteRepository.findOne({
+      where: { id: invitationId, sendTo: userId },
+    });
+  }
+  async acceptInvitation(
+    userId: number,
+    invitationId: number,
+    acceptInvitation: string,
+  ) {
+    const companyInvite = await this.companyInviteRepository.findOne({
+      where: { id: invitationId },
+    });
+    if (!companyInvite) return 'No such invite exists';
+    if (acceptInvitation === 'accept') {
+      const { companyId, role } = companyInvite;
+      const userCompany = new UserCompany();
+      userCompany.userId = userId;
+      userCompany.companyId = companyId;
+      userCompany.role = role;
+      await this.userCompanyRepository.save(userCompany);
+      await this.companyInviteRepository.delete(invitationId);
+      return 'successfully accepted invitation';
+    } else {
+      await this.companyInviteRepository.delete(invitationId);
+      return 'successfully rejected invitation';
+    }
   }
 }

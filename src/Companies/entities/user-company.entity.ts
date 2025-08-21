@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { Role } from '../../users/role.enum';
+import { CompanyRoleEnum } from '../../Guards/companyRole.enum';
 
 @Entity()
 export class UserCompany {
@@ -12,6 +12,6 @@ export class UserCompany {
   @Column({ type: 'int', nullable: false })
   companyId: number;
 
-  @Column({ type: 'enum', enum: Role, nullable: false })
-  role: Role;
+  @Column({ type: 'enum', enum: CompanyRoleEnum, nullable: false })
+  role: CompanyRoleEnum;
 }

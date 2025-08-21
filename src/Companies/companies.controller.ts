@@ -1,11 +1,11 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { CompaniesService } from './companies.service';
 import * as authenticatedRequestInterface from './interfaces/authenticated-request.interface';
 import * as authenticatedRequestInterface_1 from './interfaces/authenticated-request.interface';
 import { CreateCompanyInviteDto } from './dto/create-company-invite.dto';
-import { Roles } from '../users/roles.decorator';
-import { Role } from '../users/role.enum';
+import { Roles } from '../Guards/roles.decorator';
+import { CompanyRoleEnum } from '../Guards/companyRole.enum';
 import { CompanyInvite } from './entities/company-invite.entity';
 
 @Controller('company')
@@ -21,7 +21,7 @@ export class CompaniesController {
     return this.companiesService.create(userId, createCompanyDto.companyName);
   }
 
-  @Roles(Role.Admin, Role.Owner)
+  @Roles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
   @Post(':companyId/send-invite')
   invite(
     @Req() req: authenticatedRequestInterface.AuthenticatedRequest,
@@ -36,7 +36,7 @@ export class CompaniesController {
     );
   }
 
-  @Roles(Role.Admin, Role.Owner)
+  @Roles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
   @Get(':companyId/invites-by-me')
   findAllInvitesByUserInCompany(
     @Req() req: authenticatedRequestInterface_1.AuthenticatedRequest,
@@ -49,8 +49,15 @@ export class CompaniesController {
     );
   }
 
+  @Roles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
+  @Get(':companyId/users')
+  getAllUsersInCompany(@Param('companyId') companyId: string) {
+    const id = parseInt(companyId);
+    return this.companiesService.getUsersByCompanyId(id);
+  }
+
   @Get('my-companies')
-  viewMyCompanies(
+  getMyCompanies(
     @Req() req: authenticatedRequestInterface.AuthenticatedRequest,
   ) {
     const userId = req.user.sub;

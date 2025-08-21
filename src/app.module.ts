@@ -10,9 +10,10 @@ import { Company } from './Companies/entities/company.entity';
 import { CompanyInvite } from './Companies/entities/company-invite.entity';
 import { UserCompany } from './Companies/entities/user-company.entity';
 import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './auth/auth.guard';
-import { CompanyRolesGuard } from './users/company-roles.guard';
+import { AuthGuard } from './Guards/auth.guard';
+import { CompanyRolesGuard } from './Guards/companyRoles.guard';
 import { JwtModule } from '@nestjs/jwt';
+import { jwtConstants } from './constants';
 
 @Module({
   imports: [
@@ -28,17 +29,13 @@ import { JwtModule } from '@nestjs/jwt';
       synchronize: true,
       logging: false,
     }),
-    JwtModule.registerAsync({
-      useFactory: () => {
-        return {
-          global: true,
-          secret: process.env.JWT_SECRET,
-          signOptions: {
-            expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-          },
-        };
-      },
-    }),
+    // JwtModule.register({
+    //   global: true,
+    //   secret: jwtConstants.secret,
+    //   signOptions: {
+    //     expiresIn: '7d',
+    //   },
+    // }),
     UsersModule,
     AuthModule,
     CompaniesModule,

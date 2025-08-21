@@ -1,6 +1,5 @@
-Demo Project 2:
 
-### **Task: Build a Multi-Company Task Management System**
+### **Build a Multi-Company Task Management System**
 
 #### **Overview**
 We are building a **Task Management System** where users can belong to multiple companies and manage projects within those companies. Each company can have multiple projects, which are further organized into task lists. Users can assign and track todos, and comment on tasks.

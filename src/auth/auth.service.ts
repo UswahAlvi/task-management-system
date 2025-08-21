@@ -19,20 +19,31 @@ export class AuthService {
   }) {
     const user: User | null = await this.userService.findOne(username);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Invalid username or password');
     }
+
     const isMatch: boolean = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException('Invalid username or password');
     }
+
     const payload = {
       sub: user.id,
       username: user.username,
     };
+    const token = await this.jwtService.signAsync(payload, {
+      expiresIn: '7d',
+    });
     return {
-      access_token: await this.jwtService.signAsync(payload, {
+      message: 'Login successful!',
+      user: {
+        id: user.id,
+        username: user.username,
+      },
+      token: {
+        accessToken: token,
         expiresIn: '7d',
-      }),
+      },
     };
   }
 }
