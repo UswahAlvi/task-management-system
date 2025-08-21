@@ -3,9 +3,8 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Public } from '../Guards/public.decorator';
 import { User } from './entities/user.entity';
-import * as authenticatedRequestInterface from '../Companies/interfaces/authenticated-request.interface';
-import { CompanyInvite } from '../Companies/entities/company-invite.entity';
-
+import * as authenticatedRequestInterface from '../companies/interfaces/authenticated-request.interface';
+import { CompanyInvite } from '../companies/entities/company-invite.entity';
 
 @Controller('user')
 export class UsersController {
@@ -15,6 +14,12 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.createUser(createUserDto);
   }
+  @Get('profile')
+  Profile(@Req() req: authenticatedRequestInterface.AuthenticatedRequest) {
+    const userId = req.user.sub;
+    return this.usersService.findOneById(userId);
+  }
+
   @Post('delete')
   delete(@Body() credentials: { username: string; password: string }) {
     return this.usersService.deleteOne(credentials);

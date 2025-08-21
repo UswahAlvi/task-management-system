@@ -3,9 +3,9 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { CompaniesModule } from '../Companies/companies.module';
-import { CompanyInvite } from '../Companies/entities/company-invite.entity';
-import { UserCompany } from '../Companies/entities/user-company.entity';
+import { CompaniesModule } from '../companies/companies.module';
+import { CompanyInvite } from '../companies/entities/company-invite.entity';
+import { UserCompany } from '../companies/entities/user-company.entity';
 
 @Module({
   imports: [

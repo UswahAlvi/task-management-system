@@ -4,9 +4,8 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
-import { CompanyInvite } from '../Companies/entities/company-invite.entity';
-import { Company } from '../Companies/entities/company.entity';
-import { UserCompany } from '../Companies/entities/user-company.entity';
+import { CompanyInvite } from '../companies/entities/company-invite.entity';
+import { UserCompany } from '../companies/entities/user-company.entity';
 
 @Injectable()
 export class UsersService {
@@ -17,12 +16,6 @@ export class UsersService {
     @InjectRepository(UserCompany)
     private readonly userCompanyRepository: Repository<UserCompany>,
   ) {}
-
-  private async hashString(str: string): Promise<string> {
-    const saltRounds = 10;
-    return await bcrypt.hash(str, saltRounds);
-  }
-
   async createUser(createUserDto: CreateUserDto): Promise<string> {
     const user: User = new User();
     user.username = createUserDto.username;
@@ -32,7 +25,13 @@ export class UsersService {
     await this.userRepository.save(user);
     return 'successfully created user';
   }
-  async findOne(username: string): Promise<User | null> {
+  async findOneById(id: number) {
+    return await this.userRepository.findOne({
+      select: { username: true, firstname: true },
+      where: { id },
+    });
+  }
+  async findOneByUsername(username: string): Promise<User | null> {
     return this.userRepository.findOne({ where: { username } });
   }
   async findAll(): Promise<User[]> {
@@ -89,5 +88,9 @@ export class UsersService {
       await this.companyInviteRepository.delete(invitationId);
       return 'successfully rejected invitation';
     }
+  }
+  private async hashString(str: string): Promise<string> {
+    const saltRounds = 10;
+    return await bcrypt.hash(str, saltRounds);
   }
 }

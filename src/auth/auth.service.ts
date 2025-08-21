@@ -17,7 +17,8 @@ export class AuthService {
     username: string;
     password: string;
   }) {
-    const user: User | null = await this.userService.findOne(username);
+    const user: User | null =
+      await this.userService.findOneByUsername(username);
     if (!user) {
       throw new UnauthorizedException('Invalid username or password');
     }

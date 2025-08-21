@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
@@ -29,6 +29,17 @@ export class CompaniesService {
     userCompany.role = CompanyRoleEnum.Owner;
     await this.userCompanyRepository.save(userCompany);
     return `Company ${company.name} created successfully`;
+  }
+
+  async getCompanyById(id: number) {
+    const company = await this.companiesRepository.findOne({
+      select: { name: true, owner: true },
+      where: { id },
+    });
+    if (!company) {
+      throw new NotFoundException('Company not found');
+    }
+    return company;
   }
 
   async sendInvite(
@@ -70,7 +81,10 @@ export class CompaniesService {
     return 'successfully sent invite';
   }
   viewMyCompanies(userId: number) {
-    return this.userCompanyRepository.find({ where: { userId } });
+    return this.userCompanyRepository.find({
+      select: { companyId: true, role: true },
+      where: { userId },
+    });
   }
   async getRolesByCompanyIdAndUserId(
     userId: number,
@@ -83,16 +97,27 @@ export class CompaniesService {
     return userCompanies.map((uc) => uc.role);
   }
 
-  getInvitesByCompanyIdAndUserId(
+  async getInvitesByCompanyIdAndUserId(
     sendBy: number,
     companyId: number,
   ): Promise<CompanyInvite[]> {
-    return this.companiesInviteRepository.find({
+    return await this.companiesInviteRepository.find({
       where: { sendBy, companyId },
     });
   }
 
-  getUsersByCompanyId(companyId: number) {
-    return this.userCompanyRepository.find({ where: { companyId } });
+  async getUsersByCompanyId(companyId: number) {
+    return await this.userCompanyRepository.find({ where: { companyId } });
+  }
+
+  async removeUserFromCompany(companyId: number, userId: number) {
+    const flag = await this.userCompanyRepository.exists({
+      where: { companyId, userId },
+    });
+    if (!flag) {
+      return 'no such user exists in company';
+    }
+    await this.userCompanyRepository.delete({ companyId, userId });
+    return `User ${userId} removed successfully from company ${companyId}`;
   }
 }

@@ -7,8 +7,8 @@ import {
 import { Reflector } from '@nestjs/core';
 import { ROLES_KEY } from './roles.decorator';
 import { CompanyRoleEnum } from './companyRole.enum';
-import { AuthenticatedRequest } from '../Companies/interfaces/authenticated-request.interface';
-import { CompaniesService } from '../Companies/companies.service';
+import { AuthenticatedRequest } from '../companies/interfaces/authenticated-request.interface';
+import { CompaniesService } from '../companies/companies.service';
 
 @Injectable()
 export class CompanyRolesGuard implements CanActivate {
