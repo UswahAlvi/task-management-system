@@ -8,7 +8,7 @@ export class Project {
   @Column({ type: 'varchar', length: 50, nullable: false })
   name: string;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 200, nullable: true, default: '' })
   description: string;
 
   @Column({ type: 'int', nullable: false })
@@ -19,4 +19,7 @@ export class Project {
 
   @Column({ type: 'date', nullable: false, default: new Date() })
   createdAt: Date;
+
+  @Column({ type: 'date', nullable: false, default: new Date() })
+  updatedAt: Date;
 }

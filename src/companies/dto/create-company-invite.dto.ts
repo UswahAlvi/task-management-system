@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, IsNumber } from 'class-validator';
-import { CompanyRoleEnum } from '../../Guards/companyRole.enum';
+import { CompanyRoleEnum } from '../../common/enums/companyRole.enum';
 
 export class CreateCompanyInviteDto {
   @IsNotEmpty()

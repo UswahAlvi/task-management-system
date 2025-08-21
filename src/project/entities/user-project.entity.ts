@@ -1,8 +1,8 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { CompanyRoleEnum } from '../../common/enums/companyRole.enum';
+import { ProjectRoleEnum } from '../../common/enums/projectRole.enum';
 
 @Entity()
-export class UserCompany {
+export class UserProject {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -10,8 +10,8 @@ export class UserCompany {
   userId: number;
 
   @Column({ type: 'int', nullable: false })
-  companyId: number;
+  projectId: number;
 
-  @Column({ type: 'enum', enum: CompanyRoleEnum, nullable: false })
-  role: CompanyRoleEnum;
+  @Column({ type: 'enum', enum: ProjectRoleEnum, nullable: false })
+  role: ProjectRoleEnum;
 }

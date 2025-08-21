@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Public } from '../Guards/public.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { User } from './entities/user.entity';
-import * as authenticatedRequestInterface from '../companies/interfaces/authenticated-request.interface';
+import * as authenticatedRequestInterface from '../common/interfaces/authenticated-request.interface';
 import { CompanyInvite } from '../companies/entities/company-invite.entity';
 
 @Controller('user')

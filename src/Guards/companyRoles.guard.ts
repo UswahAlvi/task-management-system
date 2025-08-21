@@ -5,9 +5,9 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from './roles.decorator';
-import { CompanyRoleEnum } from './companyRole.enum';
-import { AuthenticatedRequest } from '../companies/interfaces/authenticated-request.interface';
+import { COMPANY_ROLES_KEY } from '../common/decorators/companyRoles.decorator';
+import { CompanyRoleEnum } from '../common/enums/companyRole.enum';
+import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
 import { CompaniesService } from '../companies/companies.service';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class CompanyRolesGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const roles = this.reflector.getAllAndOverride<CompanyRoleEnum[]>(
-      ROLES_KEY,
+      COMPANY_ROLES_KEY,
       [context.getHandler(), context.getClass()],
     );
 
@@ -47,7 +47,7 @@ export class CompanyRolesGuard implements CanActivate {
     });
     if (!flag) {
       throw new UnauthorizedException(
-        `You are no eligible for this request. Roles required for this request: ${roles.join(', ')}`,
+        `You are not eligible for this request. Roles in company required for this request: ${roles.join(', ')}`,
       );
     }
     return true;

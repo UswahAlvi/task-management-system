@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { CompanyRoleEnum } from '../../Guards/companyRole.enum';
+import { CompanyRoleEnum } from '../../common/enums/companyRole.enum';
 
 @Entity()
 export class CompanyInvite {

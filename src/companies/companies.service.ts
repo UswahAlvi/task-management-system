@@ -5,7 +5,7 @@ import { Company } from './entities/company.entity';
 import { CreateCompanyInviteDto } from './dto/create-company-invite.dto';
 import { CompanyInvite } from './entities/company-invite.entity';
 import { UserCompany } from './entities/user-company.entity';
-import { CompanyRoleEnum } from '../Guards/companyRole.enum';
+import { CompanyRoleEnum } from '../common/enums/companyRole.enum';
 
 @Injectable()
 export class CompaniesService {

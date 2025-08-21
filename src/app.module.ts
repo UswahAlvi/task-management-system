@@ -12,8 +12,9 @@ import { UserCompany } from './companies/entities/user-company.entity';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './Guards/auth.guard';
 import { CompanyRolesGuard } from './Guards/companyRoles.guard';
-import { JwtModule } from '@nestjs/jwt';
-import { jwtConstants } from './constants';
+import { ProjectsModule } from './project/projects.module';
+import { Project } from './project/entities/project.entity';
+import { UserProject } from './project/entities/user-project.entity';
 
 @Module({
   imports: [
@@ -25,7 +26,14 @@ import { jwtConstants } from './constants';
       username: process.env.DATABASE_USERNAME,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_NAME,
-      entities: [User, Company, UserCompany, CompanyInvite],
+      entities: [
+        User,
+        Company,
+        UserCompany,
+        CompanyInvite,
+        Project,
+        UserProject,
+      ],
       synchronize: true,
       logging: false,
     }),
@@ -39,6 +47,7 @@ import { jwtConstants } from './constants';
     UsersModule,
     AuthModule,
     CompaniesModule,
+    ProjectsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AuthGuard },

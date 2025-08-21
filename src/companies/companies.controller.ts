@@ -9,9 +9,9 @@ import {
 } from '@nestjs/common';
 import { CompaniesService } from './companies.service';
 import { CreateCompanyInviteDto } from './dto/create-company-invite.dto';
-import { Roles } from '../Guards/roles.decorator';
-import { CompanyRoleEnum } from '../Guards/companyRole.enum';
-import * as authenticatedRequestInterface from './interfaces/authenticated-request.interface';
+import { CompanyRoles } from '../common/decorators/companyRoles.decorator';
+import { CompanyRoleEnum } from '../common/enums/companyRole.enum';
+import * as authenticatedRequestInterface from '../common/interfaces/authenticated-request.interface';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { CompanyInvite } from './entities/company-invite.entity';
 
@@ -42,7 +42,7 @@ export class CompaniesController {
     return this.companiesService.getCompanyById(id);
   }
 
-  @Roles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
+  @CompanyRoles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
   @Post(':companyId/send-invite')
   invite(
     @Req() req: authenticatedRequestInterface.AuthenticatedRequest,
@@ -57,7 +57,7 @@ export class CompaniesController {
     );
   }
 
-  @Roles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
+  @CompanyRoles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
   @Get(':companyId/invites-by-me')
   findAllInvitesByUserInCompany(
     @Req() req: authenticatedRequestInterface.AuthenticatedRequest,
@@ -70,14 +70,14 @@ export class CompaniesController {
     );
   }
 
-  @Roles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
+  @CompanyRoles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
   @Get(':companyId/users')
   getAllUsersInCompany(@Param('companyId') companyId: string) {
     const id = parseInt(companyId);
     return this.companiesService.getUsersByCompanyId(id);
   }
 
-  @Roles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
+  @CompanyRoles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
   @Delete(':companyId/:userId')
   removeUserFromCompany(
     @Req() req: authenticatedRequestInterface.AuthenticatedRequest,
