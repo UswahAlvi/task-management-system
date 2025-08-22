@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Company } from '../../company/entities/company.entity';
+import { UserCompany } from '../../company/entities/user-company.entity';
 
 @Entity()
 export class Project {
@@ -11,11 +13,16 @@ export class Project {
   @Column({ type: 'varchar', length: 200, nullable: true, default: '' })
   description: string;
 
-  @Column({ type: 'int', nullable: false })
-  companyId: number;
+  @ManyToOne(() => Company, (company) => company.id, {
+    onDelete: 'CASCADE',
+  })
+  companyId: Company;
 
-  @Column({ type: 'int', nullable: false })
-  createdBy: number;
+  @ManyToOne(() => UserCompany, (userCompany) => userCompany.userId, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  createdBy: UserCompany;
 
   @Column({ type: 'date', nullable: false, default: new Date() })
   createdAt: Date;

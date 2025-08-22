@@ -4,7 +4,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { User } from './entities/user.entity';
 import * as authenticatedRequestInterface from '../common/interfaces/authenticated-request.interface';
-import { CompanyInvite } from '../companies/entities/company-invite.entity';
+import { CompanyInvite } from '../company/entities/company-invite.entity';
 
 @Controller('user')
 export class UsersController {

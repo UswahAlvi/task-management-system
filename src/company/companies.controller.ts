@@ -71,7 +71,7 @@ export class CompaniesController {
   }
 
   @CompanyRoles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
-  @Get(':companyId/users')
+  @Get(':companyId/user')
   getAllUsersInCompany(@Param('companyId') companyId: string) {
     const id = parseInt(companyId);
     return this.companiesService.getUsersByCompanyId(id);

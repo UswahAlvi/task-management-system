@@ -1,20 +1,24 @@
 import { Module } from '@nestjs/common';
-import { UsersModule } from './users/users.module';
+import { UsersModule } from './user/users.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as process from 'node:process';
-import { User } from './users/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
-import { CompaniesModule } from './companies/companies.module';
-import { Company } from './companies/entities/company.entity';
-import { CompanyInvite } from './companies/entities/company-invite.entity';
-import { UserCompany } from './companies/entities/user-company.entity';
+import { CompaniesModule } from './company/companies.module';
+import { Company } from './company/entities/company.entity';
+import { CompanyInvite } from './company/entities/company-invite.entity';
+import { UserCompany } from './company/entities/user-company.entity';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './common/guard/auth.guard';
 import { CompanyRolesGuard } from './common/guard/companyRoles.guard';
 import { ProjectsModule } from './project/projects.module';
 import { Project } from './project/entities/project.entity';
-import { UserProject } from './project/entities/user-project.entity';
+import { ProjectEditor } from './project/entities/project-editor.entity';
+import { User } from './user/entities/user.entity';
+import { TasklistsModule } from './tasklist/tasklists.module';
+import { TaskList } from './tasklist/entities/tasklist.entity';
+import { TodosModule } from './todo/todos.module';
+import { Todo } from './todo/entities/todo.entity';
 
 @Module({
   imports: [
@@ -32,22 +36,19 @@ import { UserProject } from './project/entities/user-project.entity';
         UserCompany,
         CompanyInvite,
         Project,
-        UserProject,
+        ProjectEditor,
+        TaskList,
+        Todo,
       ],
       synchronize: true,
       logging: false,
     }),
-    // JwtModule.register({
-    //   global: true,
-    //   secret: jwtConstants.secret,
-    //   signOptions: {
-    //     expiresIn: '7d',
-    //   },
-    // }),
     UsersModule,
     AuthModule,
     CompaniesModule,
     ProjectsModule,
+    TasklistsModule,
+    TodosModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AuthGuard },

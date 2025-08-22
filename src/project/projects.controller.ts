@@ -58,13 +58,13 @@ export class ProjectsController {
     return this.projectService.deleteProject(projectId);
   }
 
-  @Post(':projectId/add-user')
-  addUserInProject(
+  @Post(':projectId/add-editor')
+  addEditorInProject(
     @Param('projectId', ParseIntPipe) projectId: number,
     @Param('companyId', ParseIntPipe) companyId: number,
     @Body() addUserDto: AddUserDto,
   ) {
-    return this.projectService.addUserInProject(
+    return this.projectService.addEditorInProject(
       projectId,
       companyId,
       addUserDto,

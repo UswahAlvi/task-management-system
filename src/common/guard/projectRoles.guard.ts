@@ -9,7 +9,7 @@ import { PROJECT_ROLES_KEY } from '../decorators/projectRoles.decorator';
 import { ProjectRoleEnum } from '../enums/projectRole.enum';
 import { AuthenticatedRequest } from '../interfaces/authenticated-request.interface';
 import { ProjectsService } from '../../project/projects.service';
-import { CompaniesService } from '../../companies/companies.service';
+import { CompaniesService } from '../../company/companies.service';
 
 @Injectable()
 export class ProjectRolesGuard implements CanActivate {
