@@ -8,6 +8,7 @@ import { UserCompany } from '../companies/entities/user-company.entity';
 import { UserProject } from './entities/user-project.entity';
 import { ProjectRoleEnum } from '../common/enums/projectRole.enum';
 import { AddUserDto } from './dto/add-user.dto';
+import { CompanyRoleEnum } from '../common/enums/companyRole.enum';
 
 @Injectable()
 export class ProjectsService {
@@ -39,11 +40,6 @@ export class ProjectsService {
     project.createdBy = userId;
     try {
       const savedProject = await this.projectRepository.save(project);
-      const userProject = new UserProject();
-      userProject.userId = userId;
-      userProject.projectId = savedProject.id;
-      userProject.role = ProjectRoleEnum.editor;
-      await this.userProjectRepository.save(userProject);
       return `Project "${savedProject.name}" successfully created`;
     } catch (error: any) {
       throw new Error(error);
@@ -102,28 +98,112 @@ export class ProjectsService {
     }
   }
 
-  async addUserInProject(projectId: number, addUserDto: AddUserDto) {
+  async addUserInProject(
+    projectId: number,
+    companyId: number,
+    addUserDto: AddUserDto,
+  ) {
+    const { userId, role } = addUserDto;
+
+    if (!(await this.existsInCompany(companyId, userId))) {
+      return 'The user you are trying to add in project, does not exist in the company.';
+    }
     const projectExists = await this.projectRepository.exists({
       where: { id: projectId },
     });
     if (!projectExists) {
       return 'No such project exists in the company.';
     }
-    if (
-      addUserDto.role !== ProjectRoleEnum.editor &&
-      addUserDto.role !== ProjectRoleEnum.viewer
-    ) {
+
+    if (role !== ProjectRoleEnum.editor && role !== ProjectRoleEnum.viewer) {
       return 'The role can either be viewer or editor. Please provide a valid role.';
     }
+
+    if (await this.isOwner(companyId, userId)) {
+      return 'You are trying to add company owner to this project, which already has access to this project.';
+    }
+
+    if (await this.isAdmin(companyId, userId)) {
+      return 'You are trying to add an admin to this project, which already has access to this project.';
+    }
+
+    const alreadyAdded = await this.userProjectRepository.findOne({
+      select: { id: true, role: true },
+      where: { projectId, userId },
+    });
+
+    if (alreadyAdded?.role === addUserDto.role) {
+      return `User already added in the project ${projectId} with role ${addUserDto.role}"`;
+    } else if (alreadyAdded?.role) {
+      await this.userProjectRepository.update(alreadyAdded.id, {
+        role: addUserDto.role,
+      });
+      return `User already added in the project but with role ${alreadyAdded.role}, so updated the role now to ${addUserDto.role}.`;
+    }
+
     const userProject = new UserProject();
     userProject.projectId = projectId;
-    userProject.userId = addUserDto.userId;
-    userProject.role = addUserDto.role;
+    userProject.userId = userId;
+    userProject.role = role;
     try {
       await this.userProjectRepository.save(userProject);
       return `User added successfully in project as ${userProject.role}`;
     } catch (error) {
       throw new Error(error);
     }
+  }
+
+  async removeUserFromProject(
+    projectId: number,
+    companyId: number,
+    userId: number,
+  ) {
+    const projectExists = await this.projectRepository.exists({
+      where: { id: projectId },
+    });
+    if (!projectExists) {
+      return 'No such project exists in the company.';
+    }
+
+    if (await this.isOwner(companyId, userId)) {
+      return 'You are trying to remove company owner from this project!';
+    }
+
+    if (await this.isAdmin(companyId, userId)) {
+      return 'You are trying to remove admin from this project.';
+    }
+
+    const userProject = await this.userProjectRepository.findOne({
+      where: { projectId, userId },
+    });
+
+    if (!userProject) {
+      return 'The user is not a part of this project.';
+    }
+
+    try {
+      await this.userProjectRepository.delete(userProject.id);
+      return 'User removed successfully from the project.';
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  private async existsInCompany(companyId: number, userId: number) {
+    return await this.userCompanyRepository.exists({
+      where: { userId, companyId },
+    });
+  }
+
+  private async isAdmin(userId: number, companyId: number) {
+    return await this.userCompanyRepository.exists({
+      where: { companyId, userId, role: CompanyRoleEnum.Admin },
+    });
+  }
+
+  private async isOwner(userId: number, companyId: number) {
+    return await this.userCompanyRepository.exists({
+      where: { companyId, userId, role: CompanyRoleEnum.Owner },
+    });
   }
 }

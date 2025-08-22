@@ -120,4 +120,16 @@ export class CompaniesService {
     await this.userCompanyRepository.delete({ companyId, userId });
     return `User ${userId} removed successfully from company ${companyId}`;
   }
+
+  async isAdmin(userId: number, companyId: number) {
+    return await this.userCompanyRepository.exists({
+      where: { companyId, userId, role: CompanyRoleEnum.Admin },
+    });
+  }
+
+  async isOwner(userId: number, companyId: number) {
+    return await this.userCompanyRepository.exists({
+      where: { companyId, userId, role: CompanyRoleEnum.Owner },
+    });
+  }
 }

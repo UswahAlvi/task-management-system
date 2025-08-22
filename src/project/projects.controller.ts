@@ -61,8 +61,26 @@ export class ProjectsController {
   @Post(':projectId/add-user')
   addUserInProject(
     @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('companyId', ParseIntPipe) companyId: number,
     @Body() addUserDto: AddUserDto,
   ) {
-    return this.projectService.addUserInProject(projectId, addUserDto);
+    return this.projectService.addUserInProject(
+      projectId,
+      companyId,
+      addUserDto,
+    );
+  }
+
+  @Delete(':projectId/remove-user')
+  removeUser(
+    @Param('projectId', ParseIntPipe) projectId: number,
+    @Param('companyId', ParseIntPipe) companyId: number,
+    @Body() { userId }: { userId: number },
+  ) {
+    return this.projectService.removeUserFromProject(
+      projectId,
+      companyId,
+      userId,
+    );
   }
 }

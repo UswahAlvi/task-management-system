@@ -5,10 +5,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { COMPANY_ROLES_KEY } from '../common/decorators/companyRoles.decorator';
-import { CompanyRoleEnum } from '../common/enums/companyRole.enum';
-import { AuthenticatedRequest } from '../common/interfaces/authenticated-request.interface';
-import { CompaniesService } from '../companies/companies.service';
+import { COMPANY_ROLES_KEY } from '../decorators/companyRoles.decorator';
+import { CompanyRoleEnum } from '../enums/companyRole.enum';
+import { AuthenticatedRequest } from '../interfaces/authenticated-request.interface';
+import { CompaniesService } from '../../companies/companies.service';
 
 @Injectable()
 export class CompanyRolesGuard implements CanActivate {
