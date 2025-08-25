@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IntegerType, Repository } from 'typeorm';
 import { Company } from './entities/company.entity';
 import { CreateCompanyInviteDto } from './dto/create-company-invite.dto';
 import { CompanyInvite } from './entities/company-invite.entity';
 import { UserCompany } from './entities/user-company.entity';
 import { CompanyRoleEnum } from '../common/enums/companyRole.enum';
 import { User } from '../user/entities/user.entity';
+import { UpdateCompanyDto } from './dto/update-company.dto';
 
 @Injectable()
 export class CompaniesService {
@@ -20,6 +21,10 @@ export class CompaniesService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {}
+
+  getAllCompanies() {
+    return this.companiesRepository.find({});
+  }
 
   async create(id: number, companyName: string): Promise<string> {
     const user = await this.userRepository.findOne({ where: { id } });
@@ -37,8 +42,16 @@ export class CompaniesService {
     await this.userCompanyRepository.save(userCompany);
     return `Company named "${company.name}" created successfully.`;
   }
+  async updateCompany(id: number, updateCompanyDto: UpdateCompanyDto) {
+    const result = await this.companiesRepository.update(id, {
+      name: updateCompanyDto.companyName,
+    });
+    if (result.affected === 0)
+      throw new NotFoundException('No records updated');
+    else return 'Company updated';
+  }
 
-  async getCompanyById(id: number) {
+  async getCompanyById(id: IntegerType) {
     const company = await this.companiesRepository
       .createQueryBuilder('company')
       .leftJoinAndSelect('company.owner', 'owner')
@@ -52,7 +65,13 @@ export class CompaniesService {
     return company;
   }
 
-
+  async deleteCompanyById(id: number) {
+    const result = await this.companiesRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException('No records deleted');
+    }
+    return 'Company deleted';
+  }
 
   async sendInvite(
     userId: number,
@@ -62,18 +81,24 @@ export class CompaniesService {
     if (!companyId) {
       return 'Please provide a valid company ID.';
     }
+    if (!createCompanyInviteDto.sendTo) {
+      return 'Please provide a valid sendTo';
+    }
 
     if (userId === createCompanyInviteDto.sendTo) {
       return 'You cannot invite yourself. Please invite someone else.';
     }
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('No user found');
 
     const [company, sendToUser, sendByUser] = await Promise.all([
       this.companiesRepository.findOne({ where: { id: companyId } }),
       this.userRepository.findOne({
         where: { id: createCompanyInviteDto.sendTo },
       }),
-      this.userRepository.findOne({ where: { id: userId } }),
+      this.userCompanyRepository.findOne({ where: { userId: user } }),
     ]);
+
 
     if (!company) return 'No company found with the provided ID.';
     if (!sendToUser) return 'No user found with the provided invitee ID.';
@@ -81,7 +106,7 @@ export class CompaniesService {
 
     const validRoles = [CompanyRoleEnum.Admin, CompanyRoleEnum.Viewer];
     if (!validRoles.includes(createCompanyInviteDto.role)) {
-      return 'The role must be either "Admin" or "Viewer".';
+      return 'The role must be either "admin" or "viewer".';
     }
 
     const [inviteExists, userInCompany] = await Promise.all([
@@ -107,9 +132,7 @@ export class CompaniesService {
     companyInvite.sendBy = sendByUser;
     companyInvite.role = createCompanyInviteDto.role;
     companyInvite.accepted = false;
-    console.log(companyInvite);
-    const com = await this.companiesInviteRepository.save(companyInvite);
-    console.log(com);
+    await this.companiesInviteRepository.save(companyInvite);
     return 'Successfully sent the invite.';
   }
 
@@ -118,11 +141,14 @@ export class CompaniesService {
     if (!user) {
       return 'no user found';
     }
-    return this.userCompanyRepository.find({
-      select: { id: true, companyId: true, role: true },
-      where: { userId: user },
-    });
+    return await this.userCompanyRepository
+      .createQueryBuilder('userCompany')
+      .leftJoinAndSelect('userCompany.companyId', 'company')
+      .select(['userCompany.role', 'company.name'])
+      .where('userCompany.userId = :userId', { userId })
+      .getMany();
   }
+
   async getRolesByCompanyIdAndUserId(
     userId: number,
     companyId: number,
@@ -142,33 +168,29 @@ export class CompaniesService {
     return userCompanies.map((uc) => uc.role);
   }
 
-  async getInvitesByCompanyIdAndUserId(
-    sendBy: number,
-    companyId: number,
-  ): Promise<CompanyInvite[]> {
-    const company = await this.companiesRepository.findOne({
-      where: { id: companyId },
-    });
-    if (!company) throw new Error('no company found with that id');
-    const sendByUser = await this.userRepository.findOne({
-      where: { id: sendBy },
-    });
-    if (!sendByUser)
-      throw new Error('no user found with that id for sending invite');
-    return await this.companiesInviteRepository.find({
-      where: { sendBy: sendByUser, companyId: company },
-    });
+  async getInvitesByCompanyIdAndUserId(sendBy: number, companyId: number) {
+    return this.companiesInviteRepository
+      .createQueryBuilder('companyInvites')
+      .leftJoinAndSelect('companyInvites.sendBy', 'sendBy')
+      .select(['companyInvites.id', 'sendBy.name'])
+      .where('sendBy.id = :sendBy', { sendBy })
+      .andWhere('companyInvites.companyIdId = :companyId', { companyId })
+      .getMany();
   }
 
+
+
   async getUsersByCompanyId(companyId: number) {
-    const company = await this.companiesRepository.findOne({
-      where: { id: companyId },
-    });
-    if (!company) throw new Error('no company found with that id');
-    return await this.userCompanyRepository.find({
-      where: { companyId: company },
-    });
+
+    return await this.userCompanyRepository
+      .createQueryBuilder('userCompany')
+      .leftJoinAndSelect('userCompany.companyId', 'company')
+      .leftJoinAndSelect('userCompany.userId', 'user')
+      .select(['userCompany.role', 'user.username'])
+      .where('company.id = :companyId', { companyId })
+      .getMany();
   }
+
 
   async removeUserFromCompany(companyId: number, userId: number) {
     const user = await this.userRepository.findOne({ where: { id: userId } });

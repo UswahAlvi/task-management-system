@@ -21,16 +21,21 @@ import { AddUserDto } from './dto/add-user.dto';
 @Controller('company/:companyId/project')
 export class ProjectsController {
   constructor(private readonly projectService: ProjectsService) {}
-
+  @CompanyRoles(
+    CompanyRoleEnum.Owner,
+    CompanyRoleEnum.Admin,
+    CompanyRoleEnum.Viewer,
+  )
   @Get()
   getAllProjects(@Param('companyId', ParseIntPipe) companyId: number) {
     return this.projectService.getAllProjects(companyId);
   }
+
   @Post()
   create(
     @Body() createProjectDto: CreateProjectDto,
     @Req() req: authenticatedRequestInterface.AuthenticatedRequest,
-  ) {
+  ): Promise<string> {
     const userId = req.user.sub;
     const companyId = parseInt(req.params.companyId);
     return this.projectService.createProject(

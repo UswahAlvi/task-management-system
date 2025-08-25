@@ -4,6 +4,7 @@ import {
   IsDateString,
   IsEnum,
   IsInt,
+  IsNumber,
 } from 'class-validator';
 import { Priority } from '../../common/enums/priority.enum';
 import { Status } from '../../common/enums/status.enum';
@@ -23,13 +24,12 @@ export class UpdateTodoDto {
 
   @IsOptional()
   @IsEnum(Priority)
-  priority?: string;
+  priority?: Priority;
 
   @IsOptional()
   @IsEnum(Status)
   status?: Status;
 
-  @IsOptional()
-  @IsInt()
-  assignedTo?: number;
+  @IsNumber()
+  assignedTo: number;
 }

@@ -19,6 +19,9 @@ import { TasklistsModule } from './tasklist/tasklists.module';
 import { TaskList } from './tasklist/entities/tasklist.entity';
 import { TodosModule } from './todo/todos.module';
 import { Todo } from './todo/entities/todo.entity';
+import { ProjectRolesGuard } from './common/guard/projectRoles.guard';
+import { CommentModule } from './comment/comment.module';
+import { Comment } from './comment/entities/comment.entity';
 
 @Module({
   imports: [
@@ -39,6 +42,7 @@ import { Todo } from './todo/entities/todo.entity';
         ProjectEditor,
         TaskList,
         Todo,
+        Comment,
       ],
       synchronize: true,
       logging: false,
@@ -49,10 +53,12 @@ import { Todo } from './todo/entities/todo.entity';
     ProjectsModule,
     TasklistsModule,
     TodosModule,
+    CommentModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: AuthGuard },
     { provide: APP_GUARD, useClass: CompanyRolesGuard },
+    { provide: APP_GUARD, useClass: ProjectRolesGuard },
   ],
 })
 export class AppModule {}

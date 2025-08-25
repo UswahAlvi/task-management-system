@@ -13,8 +13,6 @@ export class UserCompany {
   })
   userId: User;
 
-  // @Column({ type: 'int', nullable: false })
-  // companyId: number;
   @ManyToOne(() => Company, (company) => company.id, {
     onDelete: 'CASCADE',
   })

@@ -12,7 +12,7 @@ export class Todo {
   @Column({ type: 'varchar', length: 50, nullable: false })
   title: string;
 
-  @Column({ type: 'varchar', length: 200, nullable: true })
+  @Column({ type: 'varchar', length: 200, nullable: true, default: '' })
   description: string;
 
   @Column({ type: 'enum', enum: Status, default: Status.pending })

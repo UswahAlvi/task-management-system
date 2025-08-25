@@ -10,7 +10,7 @@ import { Priority } from '../../common/enums/priority.enum';
 import { Status } from '../../common/enums/status.enum';
 
 export class CreateTodoDto {
-  @IsNotEmpty()
+  @IsNotEmpty({ message: 'title cannot be empty' })
   @IsString()
   title: string;
 

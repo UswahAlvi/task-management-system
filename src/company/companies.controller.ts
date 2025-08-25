@@ -4,6 +4,8 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
+  Patch,
   Post,
   Req,
 } from '@nestjs/common';
@@ -14,10 +16,19 @@ import { CompanyRoleEnum } from '../common/enums/companyRole.enum';
 import * as authenticatedRequestInterface from '../common/interfaces/authenticated-request.interface';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { CompanyInvite } from './entities/company-invite.entity';
+import { Public } from '../common/decorators/public.decorator';
+import { UpdateCompanyDto } from './dto/update-company.dto';
+import { IntegerType } from 'typeorm';
 
 @Controller('company')
 export class CompaniesController {
   constructor(private readonly companiesService: CompaniesService) {}
+
+  @Public()
+  @Get('all')
+  getAllCompanies() {
+    return this.companiesService.getAllCompanies();
+  }
 
   @Get()
   getMyCompanies(
@@ -35,11 +46,23 @@ export class CompaniesController {
     const userId = req.user.sub;
     return this.companiesService.create(userId, createCompanyDto.companyName);
   }
+  @CompanyRoles(CompanyRoleEnum.Owner, CompanyRoleEnum.Admin)
+  @Patch(':companyId')
+  update(
+    @Body() updateCompanyDto: UpdateCompanyDto,
+    @Param('companyId', ParseIntPipe) companyId,
+  ) {
+    return this.companiesService.updateCompany(companyId, updateCompanyDto);
+  }
 
   @Get(':companyId')
-  getCompany(@Param('companyId') companyId: string) {
-    const id = parseInt(companyId);
-    return this.companiesService.getCompanyById(id);
+  getCompany(@Param('companyId', ParseIntPipe) companyId) {
+    return this.companiesService.getCompanyById(companyId);
+  }
+
+  @Delete(':companyId')
+  deleteCompany(@Param('companyId', ParseIntPipe) companyId) {
+    return this.companiesService.deleteCompanyById(companyId);
   }
 
   @CompanyRoles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
@@ -78,7 +101,7 @@ export class CompaniesController {
   }
 
   @CompanyRoles(CompanyRoleEnum.Admin, CompanyRoleEnum.Owner)
-  @Delete(':companyId/:userId')
+  @Delete(':companyId/user/:userId')
   removeUserFromCompany(
     @Req() req: authenticatedRequestInterface.AuthenticatedRequest,
   ) {

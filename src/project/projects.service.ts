@@ -100,13 +100,9 @@ export class ProjectsService {
   }
 
   async deleteProject(projectId: number) {
-    try {
-      await this.projectRepository.delete(projectId);
-      await this.userProjectRepository.delete(projectId);
-      return `Project "${projectId}" deleted successfully.`;
-    } catch (error) {
-      throw new Error(error);
-    }
+    await this.projectRepository.delete(projectId);
+    await this.userProjectRepository.delete(projectId);
+    return `Project "${projectId}" deleted successfully.`;
   }
 
   async getUserProjectRole(projectId: number, userId: number) {

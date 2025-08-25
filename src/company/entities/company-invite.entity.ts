@@ -2,6 +2,7 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { CompanyRoleEnum } from '../../common/enums/companyRole.enum';
 import { Company } from './company.entity';
 import { User } from '../../user/entities/user.entity';
+import { UserCompany } from './user-company.entity';
 
 @Entity()
 export class CompanyInvite {
@@ -16,11 +17,11 @@ export class CompanyInvite {
   })
   companyId: Company;
 
-  @ManyToOne(() => User, (user) => user.id,{
+  @ManyToOne(() => UserCompany, (userCompany) => userCompany.userId, {
     onDelete: 'SET NULL',
     nullable: true,
   })
-  sendBy: User;
+  sendBy: UserCompany;
 
   @ManyToOne(() => User, (user) => user.id, {
     onDelete: 'CASCADE',
@@ -29,4 +30,5 @@ export class CompanyInvite {
 
   @Column({ type: 'enum', enum: CompanyRoleEnum, nullable: false })
   role: CompanyRoleEnum;
+  companyInvite: UserCompany;
 }

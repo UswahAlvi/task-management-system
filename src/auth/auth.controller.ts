@@ -4,7 +4,7 @@ import { SigninDto } from './dto/signin.dto';
 import { AuthService } from './auth.service';
 import { Public } from '../common/decorators/public.decorator';
 
-@Controller('auth')
+@Controller('user')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
   @HttpCode(HttpStatus.OK)

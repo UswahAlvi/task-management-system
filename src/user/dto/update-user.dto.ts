@@ -9,17 +9,17 @@ import {
 const passwordRegEx =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*d)(?=.*[@$!%*?&])[A-Za-zd@$!%*?&]{8,20}$/;
 
-export class CreateUserDto {
+export class UpdateUserDto {
   @IsString()
   @MinLength(4, { message: 'Username must be at least 4 characters' })
   @MaxLength(20, { message: 'Username must be at max 8 characters' })
-  @IsNotEmpty({ message: 'Username must not be empty' })
+
   username: string;
 
   @IsString()
   @MinLength(2, { message: 'Firstname must be at least 2 characters' })
   @MaxLength(20, { message: 'Firstname must be at most 20 characters' })
-  @IsNotEmpty({ message: 'firstname must not be empty' })
+
   firstname: string;
 
   @IsString()
@@ -27,7 +27,7 @@ export class CreateUserDto {
   @MaxLength(20, { message: 'Lastname must be at most 20 characters' })
   lastname: string;
 
-  @IsNotEmpty()
+
   @Matches(passwordRegEx, {
     message: `Password must contain Minimum 8 and maximum 20 characters, 
     at least one uppercase letter, 

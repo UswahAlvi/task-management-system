@@ -1,10 +1,20 @@
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Req,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Public } from '../common/decorators/public.decorator';
 import { User } from './entities/user.entity';
 import * as authenticatedRequestInterface from '../common/interfaces/authenticated-request.interface';
 import { CompanyInvite } from '../company/entities/company-invite.entity';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
 export class UsersController {
@@ -20,10 +30,24 @@ export class UsersController {
     return this.usersService.findOneById(userId);
   }
 
-  @Post('delete')
-  delete(@Body() credentials: { username: string; password: string }) {
-    return this.usersService.deleteOne(credentials);
+  @Patch('update-profile')
+  updateProfile(
+    @Req() req: authenticatedRequestInterface.AuthenticatedRequest,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    const userId = req.user.sub;
+    return this.usersService.updateUser(updateUserDto, userId);
   }
+
+  @Delete()
+  delete(
+    @Body() credentials: { password: string },
+    @Req() req: authenticatedRequestInterface.AuthenticatedRequest,
+  ) {
+    const userId = req.user.sub;
+    return this.usersService.deleteOne(userId, credentials.password);
+  }
+  @Public()
   @Get()
   findAllUsers(): Promise<User[]> {
     return this.usersService.findAll();
@@ -59,5 +83,13 @@ export class UsersController {
       invitationId,
       acceptInvitation,
     );
+  }
+
+  @Get('my-companies')
+  getMyCompanies(
+    @Req() req: authenticatedRequestInterface.AuthenticatedRequest,
+  ) {
+    const userId = req.user.sub;
+    return this.usersService.findMyCompanies(userId);
   }
 }
